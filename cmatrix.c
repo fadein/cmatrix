@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	randnum = 0,
 	randmin = 0;
 
-    char *oldtermname, *syscmd = NULL;
+    char *oldtermname = NULL, *syscmd = NULL;
     int optchr, keypress;
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
@@ -340,10 +340,10 @@ int main(int argc, char *argv[])
     if (bold == -1)
 	bold = 0;
 
-    oldtermname = getenv("TERM");
     if (force && strcmp("linux", getenv("TERM"))) {
 	/* Portability wins out here, apparently putenv is much more
 	   common on non-Linux than setenv */
+	oldtermname = getenv("TERM");
 	putenv("TERM=linux");
     }
     initscr();
@@ -641,9 +641,11 @@ int main(int argc, char *argv[])
 
     }
 
-    syscmd = nmalloc((strlen(oldtermname) + 6), sizeof(char *));
-    sprintf(syscmd, "TERM=%s", oldtermname);
-    putenv(syscmd);
+    if (oldtermname) {
+	syscmd = nmalloc((strlen(oldtermname) + 6), sizeof(char *));
+	sprintf(syscmd, "TERM=%s", oldtermname);
+	putenv(syscmd);
+    }
     finish(0);
 }
 
