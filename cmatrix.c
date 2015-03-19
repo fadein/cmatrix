@@ -387,12 +387,23 @@ int main(int argc, char *argv[])
 	z,
 	firstcoldone = 0,
 	random = 0,
-	highnum = 0,
-	randnum = 0,
-	randmin = 0;
+	highnum,
+	randnum,
+	randmin;
 
     char *oldtermname = NULL, *syscmd = NULL;
     int keypress;
+
+    /* Set up values for random number generation */
+    if (console || xwindow) {
+	randnum = 51;
+	randmin = 166;
+	highnum = 217;
+    } else {
+	randnum = 93;
+	randmin = 33;
+	highnum = 123;
+    }
 
     do_opts(argc, argv);
 
@@ -461,17 +472,6 @@ int main(int argc, char *argv[])
     }
 
     srand(time(NULL));
-
-    /* Set up values for random number generation */
-    if (console || xwindow) {
-	randnum = 51;
-	randmin = 166;
-	highnum = 217;
-    } else {
-	randnum = 93;
-	randmin = 33;
-	highnum = 123;
-    }
 
     var_init();
 
@@ -589,6 +589,8 @@ int main(int argc, char *argv[])
 		    }
 		}
 	    }
+
+
 	    /* Hack =P */
 	    if (!oldstyle) {
 		y = 1;
