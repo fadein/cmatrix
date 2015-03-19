@@ -641,9 +641,9 @@ int main(int argc, char *argv[])
 
     }
 
-    sprintf(syscmd, "putenv TERM=%s", oldtermname);    
-    i = system(syscmd);
     syscmd = nmalloc((strlen(oldtermname) + 6), sizeof(char *));
+    sprintf(syscmd, "TERM=%s", oldtermname);
+    putenv(syscmd);
     finish(0);
 }
 
