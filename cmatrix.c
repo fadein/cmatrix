@@ -70,7 +70,10 @@ int *updates = NULL;			/* What does this do again? :) */
 int asynch = 0,
     bold   = -1,
     update = 4,
-    mcolor = COLOR_GREEN;
+    mcolor = COLOR_GREEN,
+    screensaver = 0,
+    oldstyle = 0,
+    force = 0;
 
 int va_system(char *str, ...)
 {
@@ -300,94 +303,98 @@ void handle_keypress(int keypress)
     }
 }
 
+void do_opts(int argc, char *argv[])
+{
+    int optchr;
+
+    /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
+    opterr = 0;
+    while ((optchr = getopt(argc, argv, "abBfhlnosxVu:C:")) != EOF) {
+	switch (optchr) {
+	    case 's':
+		screensaver = 1;
+		break;
+	    case 'a':
+		asynch = 1;
+		break;
+	    case 'b':
+		if (bold != 2 && bold != 0)
+		    bold = 1;
+		break;
+	    case 'B':
+		if (bold != 0)
+		    bold = 2;
+		break;
+	    case 'C':
+		if (!strcasecmp(optarg, "green"))
+		    mcolor = COLOR_GREEN;
+		else if (!strcasecmp(optarg, "red"))
+		    mcolor = COLOR_RED;
+		else if (!strcasecmp(optarg, "blue"))
+		    mcolor = COLOR_BLUE;
+		else if (!strcasecmp(optarg, "white"))
+		    mcolor = COLOR_WHITE;
+		else if (!strcasecmp(optarg, "yellow"))
+		    mcolor = COLOR_YELLOW;
+		else if (!strcasecmp(optarg, "cyan"))
+		    mcolor = COLOR_CYAN;
+		else if (!strcasecmp(optarg, "magenta"))
+		    mcolor = COLOR_MAGENTA;
+		else if (!strcasecmp(optarg, "black"))
+		    mcolor = COLOR_BLACK;
+		else {
+		    printf(" Invalid color selection\n Valid "
+			    "colors are green, red, blue, "
+			    "white, yellow, cyan, magenta " "and black.\n");
+		    exit(1);
+		}
+		break;
+	    case 'f':
+		force = 1;
+		break;
+	    case 'l':
+		console = 1;
+		break;
+	    case 'n':
+		bold = 0;
+		break;
+	    case 'h':
+	    case '?':
+		usage();
+		exit(0);
+	    case 'o':
+		oldstyle = 1;
+		break;
+	    case 'u':
+		update = atoi(optarg);
+		break;
+	    case 'x':
+		xwindow = 1;
+		break;
+	    case 'V':
+		version();
+		exit(0);
+	}
+    }
+}
+
 int main(int argc, char *argv[])
 {
     int i,
 	j = 0,
 	count = 0,
-	screensaver = 0,
-	force = 0,
 	y,
 	z,
 	firstcoldone = 0,
-	oldstyle = 0,
 	random = 0,
 	highnum = 0,
 	randnum = 0,
 	randmin = 0;
 
     char *oldtermname = NULL, *syscmd = NULL;
-    int optchr, keypress;
+    int keypress;
 
-    /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
-    opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlnosxVu:C:")) != EOF) {
-	switch (optchr) {
-	case 's':
-	    screensaver = 1;
-	    break;
-	case 'a':
-	    asynch = 1;
-	    break;
-	case 'b':
-	    if (bold != 2 && bold != 0)
-		bold = 1;
-	    break;
-	case 'B':
-	    if (bold != 0)
-		bold = 2;
-	    break;
-	case 'C':
-	    if (!strcasecmp(optarg, "green"))
-		mcolor = COLOR_GREEN;
-	    else if (!strcasecmp(optarg, "red"))
-		mcolor = COLOR_RED;
-	    else if (!strcasecmp(optarg, "blue"))
-		mcolor = COLOR_BLUE;
-	    else if (!strcasecmp(optarg, "white"))
-		mcolor = COLOR_WHITE;
-	    else if (!strcasecmp(optarg, "yellow"))
-		mcolor = COLOR_YELLOW;
-	    else if (!strcasecmp(optarg, "cyan"))
-		mcolor = COLOR_CYAN;
-	    else if (!strcasecmp(optarg, "magenta"))
-		mcolor = COLOR_MAGENTA;
-	    else if (!strcasecmp(optarg, "black"))
-		mcolor = COLOR_BLACK;
-	    else {
-		printf(" Invalid color selection\n Valid "
-		       "colors are green, red, blue, "
-		       "white, yellow, cyan, magenta " "and black.\n");
-		exit(1);
-	    }
-	    break;
-	case 'f':
-	    force = 1;
-	    break;
-	case 'l':
-	    console = 1;
-	    break;
-	case 'n':
-	    bold = 0;
-	    break;
-	case 'h':
-	case '?':
-	    usage();
-	    exit(0);
-	case 'o':
-	    oldstyle = 1;
-	    break;
-	case 'u':
-	    update = atoi(optarg);
-	    break;
-	case 'x':
-	    xwindow = 1;
-	    break;
-	case 'V':
-	    version();
-	    exit(0);
-	}
-    }
+    do_opts(argc, argv);
 
     /* If bold hasn't been turned on or off yet, assume off */
     if (bold == -1)
