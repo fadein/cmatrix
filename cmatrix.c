@@ -149,14 +149,14 @@ void version(void)
 
 
 /* nmalloc from nano by Big Gaute */
-void *nmalloc(size_t howmuch)
+void *nmalloc(size_t howmany, size_t howbig)
 {
     void *r;
 
     /* Panic save? */
 
-    if (!(r = malloc(howmuch)))
-	c_die("CMatrix: malloc: out of memory!");
+    if (!(r = calloc(howmany, howbig)))
+	c_die("CMatrix: calloc: out of memory!");
 
     return r;
 }
@@ -169,21 +169,21 @@ RETSIGTYPE var_init(void)
     if (matrix != NULL)
 	free(matrix);
 
-    matrix = nmalloc(sizeof(cmatrix) * (LINES + 1));
+    matrix = (cmatrix**)nmalloc(LINES + 1, sizeof(cmatrix));
     for (i = 0; i <= LINES; i++)
-	matrix[i] = nmalloc(sizeof(cmatrix) * COLS);
+	matrix[i] = nmalloc(COLS, sizeof(cmatrix));
 
     if (length != NULL)
 	free(length);
-    length = nmalloc(COLS * sizeof(int));
+    length = nmalloc(COLS, sizeof(int));
 
     if (spaces != NULL)
 	free(spaces);
-    spaces = nmalloc(COLS* sizeof(int));
+    spaces = nmalloc(COLS, sizeof(int));
 
     if (updates != NULL)
 	free(updates);
-    updates = nmalloc(COLS * sizeof(int));
+    updates = nmalloc(COLS, sizeof(int));
 
     /* Make the matrix */
     for (i = 0; i <= LINES; i++)
@@ -641,9 +641,9 @@ int main(int argc, char *argv[])
 
     }
 
-    syscmd = nmalloc(sizeof (char *) * (strlen(oldtermname) + 15));
     sprintf(syscmd, "putenv TERM=%s", oldtermname);    
     i = system(syscmd);
+    syscmd = nmalloc((strlen(oldtermname) + 6), sizeof(char *));
     finish(0);
 }
 
