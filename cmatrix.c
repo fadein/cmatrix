@@ -630,9 +630,8 @@ int main(int argc, char *argv[])
 
     syscmd = nmalloc(sizeof (char *) * (strlen(oldtermname) + 15));
     sprintf(syscmd, "putenv TERM=%s", oldtermname);    
-    system(syscmd);
+    i = system(syscmd);
     finish(0);
-
 }
 
 /* vim: set tabstop=8: */
