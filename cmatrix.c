@@ -245,10 +245,23 @@ void handle_sigwinch(int s)
 
 int main(int argc, char *argv[])
 {
-    int i, j = 0, count = 0, screensaver = 0, asynch = 0, bold = -1,
-	force = 0, y, z, firstcoldone = 0, oldstyle = 0, random =
-	0, update = 4, highnum = 0, mcolor = COLOR_GREEN, randnum =
-	0, randmin = 0;
+    int i,
+	j = 0,
+	count = 0,
+	screensaver = 0,
+	asynch = 0,
+	bold = -1,
+	force = 0,
+	y,
+	z,
+	firstcoldone = 0,
+	oldstyle = 0,
+	random = 0,
+	update = 4,
+	highnum = 0,
+	mcolor = COLOR_GREEN,
+	randnum = 0,
+	randmin = 0;
 
     char *oldtermname, *syscmd = NULL;
     int optchr, keypress;
