@@ -67,6 +67,10 @@ cmatrix **matrix = (cmatrix **) NULL;   /* The matrix has you */
 int *length = NULL;			/* Length of cols in each line */
 int *spaces = NULL;			/* spaces left to fill */
 int *updates = NULL;			/* What does this do again? :) */
+int asynch = 0,
+    bold   = -1,
+    update = 4,
+    mcolor = COLOR_GREEN;
 
 int va_system(char *str, ...)
 {
@@ -242,6 +246,59 @@ void handle_sigwinch(int s)
 }
 
 
+void handle_keypress(int keypress)
+{
+    switch (keypress) {
+	case 'q':
+	    finish(0);
+	    break;
+	case 'a':
+	    asynch = 1 - asynch;
+	    break;
+	case 'b':
+	    bold = 1;
+	    break;
+	case 'B':
+	    bold = 2;
+	    break;
+	case 'n':
+	    bold = 0;
+	    break;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    update = keypress - 48;
+	    break;
+	case '!':
+	    mcolor = COLOR_RED;
+	    break;
+	case '@':
+	    mcolor = COLOR_GREEN;
+	    break;
+	case '#':
+	    mcolor = COLOR_YELLOW;
+	    break;
+	case '$':
+	    mcolor = COLOR_BLUE;
+	    break;
+	case '%':
+	    mcolor = COLOR_MAGENTA;
+	    break;
+	case '^':
+	    mcolor = COLOR_CYAN;
+	    break;
+	case '&':
+	    mcolor = COLOR_WHITE;
+	    break;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -249,17 +306,13 @@ int main(int argc, char *argv[])
 	j = 0,
 	count = 0,
 	screensaver = 0,
-	asynch = 0,
-	bold = -1,
 	force = 0,
 	y,
 	z,
 	firstcoldone = 0,
 	oldstyle = 0,
 	random = 0,
-	update = 4,
 	highnum = 0,
-	mcolor = COLOR_GREEN,
 	randnum = 0,
 	randmin = 0;
 
@@ -424,56 +477,7 @@ int main(int argc, char *argv[])
 	    if (screensaver == 1)
 		finish(0);
 	    else
-		switch (keypress) {
-		case 'q':
-		    finish(0);
-		    break;
-		case 'a':
-		    asynch = 1 - asynch;
-		    break;
-		case 'b':
-		    bold = 1;
-		    break;
-		case 'B':
-		    bold = 2;
-		    break;
-		case 'n':
-		    bold = 0;
-		    break;
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		    update = keypress - 48;
-		    break;
-		case '!':
-		    mcolor = COLOR_RED;
-		    break;
-		case '@':
-		    mcolor = COLOR_GREEN;
-		    break;
-		case '#':
-		    mcolor = COLOR_YELLOW;
-		    break;
-		case '$':
-		    mcolor = COLOR_BLUE;
-		    break;
-		case '%':
-		    mcolor = COLOR_MAGENTA;
-		    break;
-		case '^':
-		    mcolor = COLOR_CYAN;
-		    break;
-		case '&':
-		    mcolor = COLOR_WHITE;
-		    break;
-		}
+		handle_keypress(keypress);
 	}
 	for (j = 0; j <= COLS - 1; j += 2) {
 	    if (count > updates[j] || asynch == 0) {
@@ -638,7 +642,6 @@ int main(int argc, char *argv[])
 	}
 	refresh();
 	napms(update * 10);
-
     }
 
     if (oldtermname) {
