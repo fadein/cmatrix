@@ -647,6 +647,7 @@ int main(int argc, char *argv[])
 	putenv(syscmd);
     }
     finish(0);
+    return 0;
 }
 
 /* vim: set tabstop=8: */
