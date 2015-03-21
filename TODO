@@ -3,3 +3,7 @@
 - Allow segments within collumns to scroll at different speeds
 - Implement horizontal scrolling for messages etc like credits from movie.
 - Make compatible with more recent versions of autotools
+
+are all of these calls to rand() efficient?
+	are all of these calls to rand() necessary?
+	
