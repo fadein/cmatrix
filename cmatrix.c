@@ -489,116 +489,74 @@ int main(int argc, char *argv[])
 	for (j = 0; j <= COLS - 1; j += 2) {
 	    if (count > updates[j] || asynch == 0) {
 
-		/* I dont like old-style scrolling, yuck */
-		if (oldstyle) {
-		    for (i = LINES - 1; i >= 1; i--)
-			matrix[i][j].val = matrix[i - 1][j].val;
-
-		    random = (int) rand() % (randnum + 8) + randmin;
-
-		    if (matrix[1][j].val == 0)
-			matrix[0][j].val = 1;
-		    else if (matrix[1][j].val == ' '
-			     || matrix[1][j].val == -1) {
-			if (spaces[j] > 0) {
-			    matrix[0][j].val = ' ';
-			    spaces[j]--;
-			} else {
-
-			    /* Random number to determine whether head of next collumn
-			       of chars has a white 'head' on it. */
-
-			    if (((int) rand() % 3) == 1)
-				matrix[0][j].val = 0;
-			    else
-				matrix[0][j].val = (int) rand() % randnum
-				    + randmin;
-
-			    spaces[j] = (int) rand() % LINES + 1;
-			}
-		    } else if (random > highnum && matrix[1][j].val != 1)
-			matrix[0][j].val = ' ';
-		    else
-			matrix[0][j].val =
-			    (int) rand() % randnum + randmin;
-
-		} else {	/* New style scrolling (default) */
-		    if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
+		if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
 			&& spaces[j] > 0) {
-			matrix[0][j].val = -1;
-			spaces[j]--;
-		    }
-			else if (matrix[0][j].val == -1
-				 && matrix[1][j].val == ' ') {
-			length[j] = (int) rand() % (LINES - 3) + 3;
-			matrix[0][j].val =
-			    (int) rand() % randnum + randmin;
+		    matrix[0][j].val = -1;
+		    spaces[j]--;
+		}
+		else if (matrix[0][j].val == -1
+			&& matrix[1][j].val == ' ') {
+		    length[j] = (int) rand() % (LINES - 3) + 3;
+		    matrix[0][j].val =
+			(int) rand() % randnum + randmin;
 
-			if ((int) rand() % 2 == 1)
-			    matrix[0][j].bold = 2;
+		    if ((int) rand() % 2 == 1)
+			matrix[0][j].bold = 2;
 
-			spaces[j] = (int) rand() % LINES + 1;
-		    }
-		    i = 0;
-		    y = 0;
-		    firstcoldone = 0;
-		    while (i <= LINES) {
+		    spaces[j] = (int) rand() % LINES + 1;
+		}
+		i = 0;
+		y = 0;
+		firstcoldone = 0;
+		while (i <= LINES) {
 
-			/* Skip over spaces */
-			while (i <= LINES && (matrix[i][j].val == ' ' ||
-			       matrix[i][j].val == -1))
-			    i++;
-
-			if (i > LINES)
-			    break;
-
-			/* Go to the head of this collumn */
-			z = i;
-			y = 0;
-			while (i <= LINES && (matrix[i][j].val != ' ' &&
-				matrix[i][j].val != -1)) {
-			    i++;
-			    y++;
-			}
-
-			if (i > LINES) {
-			    matrix[z][j].val = ' ';
-			    matrix[LINES][j].bold = 1;
-			    continue;
-			}
-
-			matrix[i][j].val =
-			    (int) rand() % randnum + randmin;
-
-			if (matrix[i - 1][j].bold == 2) {
-			    matrix[i - 1][j].bold = 1;
-			    matrix[i][j].bold = 2;
-			}
-
-			/* If we're at the top of the collumn and it's reached its
-			 * full length (about to start moving down), we do this
-			 * to get it moving.  This is also how we keep segments not
-			 * already growing from growing accidentally =>
-			 */
-			if (y > length[j] || firstcoldone) {
-			    matrix[z][j].val = ' ';
-			    matrix[0][j].val = -1;
-			}
-			firstcoldone = 1;
+		    /* Skip over spaces */
+		    while (i <= LINES && (matrix[i][j].val == ' ' ||
+				matrix[i][j].val == -1))
 			i++;
+
+		    if (i > LINES)
+			break;
+
+		    /* Go to the head of this collumn */
+		    z = i;
+		    y = 0;
+		    while (i <= LINES && (matrix[i][j].val != ' ' &&
+				matrix[i][j].val != -1)) {
+			i++;
+			y++;
 		    }
+
+		    if (i > LINES) {
+			matrix[z][j].val = ' ';
+			matrix[LINES][j].bold = 1;
+			continue;
+		    }
+
+		    matrix[i][j].val =
+			(int) rand() % randnum + randmin;
+
+		    if (matrix[i - 1][j].bold == 2) {
+			matrix[i - 1][j].bold = 1;
+			matrix[i][j].bold = 2;
+		    }
+
+		    /* If we're at the top of the collumn and it's reached its
+		     * full length (about to start moving down), we do this
+		     * to get it moving.  This is also how we keep segments not
+		     * already growing from growing accidentally =>
+		     */
+		    if (y > length[j] || firstcoldone) {
+			matrix[z][j].val = ' ';
+			matrix[0][j].val = -1;
+		    }
+		    firstcoldone = 1;
+		    i++;
 		}
 	    }
 
-
-	    /* Hack =P */
-	    if (!oldstyle) {
-		y = 1;
-		z = LINES;
-	    } else {
-		y = 0;
-		z = LINES - 1;
-	    }
+	    y = 1;
+	    z = LINES;
 	    for (i = y; i <= z; i++) {
 		move(i - y, j);
 
