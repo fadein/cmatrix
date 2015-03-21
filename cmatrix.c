@@ -54,11 +54,12 @@
 #endif				/* HAVE_TERMIO_H */
 
 
+typedef enum { NORMAL = 1, BOLD = 2 } boldness;
 
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
-    int bold;
+    boldness bold;
 } cmatrix;
 
 /* Global variables, unfortunately */
@@ -504,7 +505,7 @@ int main(int argc, char *argv[])
 			matrix[0][col].val = (int) rand() % randnum + randmin;
 
 			if ((int) rand() % 2 == 1)
-			    matrix[0][col].bold = 2;
+			    matrix[0][col].bold = BOLD;
 
 			spaces[col] = (int) rand() % LINES + 1;
 		    }
@@ -526,24 +527,28 @@ int main(int argc, char *argv[])
 		    /* Go to the head of this collumn */
 		    z = line;
 		    y = 0;
-		    while (line <= LINES && (matrix[line][col].val != ' ' &&
-				matrix[line][col].val != -1)) {
+		    while (line <= LINES && // while we don't go off the bottom of screen
+			    (matrix[line][col].val != ' ' && // and the current char isn't a
+			     matrix[line][col].val != -1)) { // blank or -1
 			line++;
 			y++;
 		    }
 
 		    if (line > LINES) {
 			matrix[z][col].val = ' ';
-			matrix[LINES][col].bold = 1;
+			matrix[LINES][col].bold = NORMAL;
 			continue;
 		    }
 
-		    matrix[line][col].val =
-			(int) rand() % randnum + randmin;
+		    // assign a random character to this matrix cell
+		    matrix[line][col].val = (int) rand() % randnum + randmin;
 
-		    if (matrix[line - 1][col].bold == 2) {
-			matrix[line - 1][col].bold = 1;
-			matrix[line][col].bold = 2;
+		    // update this cell's boldness based on the one above it
+		    // if the cell above is bold, make it normal
+		    // and bold me
+		    if (matrix[line - 1][col].bold == BOLD) {
+			matrix[line - 1][col].bold = NORMAL;
+			matrix[line][col].bold = BOLD;
 		    }
 
 		    /* If we're at the top of the collumn and it's reached its
@@ -565,7 +570,7 @@ int main(int argc, char *argv[])
 	    for (line = y; line <= z; line++) {
 		move(line - y, col);
 
-		if (matrix[line][col].val == 0 || matrix[line][col].bold == 2) {
+		if (matrix[line][col].val == 0 || matrix[line][col].bold == BOLD) {
 		    if (console || xwindow)
 			attron(A_ALTCHARSET);
 		    attron(COLOR_PAIR(COLOR_WHITE));
@@ -584,7 +589,8 @@ int main(int argc, char *argv[])
 			attroff(A_BOLD);
 		    if (console || xwindow)
 			attroff(A_ALTCHARSET);
-		} else {
+		}
+		else {
 		    attron(COLOR_PAIR(mcolor));
 		    if (matrix[line][col].val == 1) {
 			if (bold)
@@ -592,7 +598,8 @@ int main(int argc, char *argv[])
 			addch('|');
 			if (bold)
 			    attroff(A_BOLD);
-		    } else {
+		    }
+		    else {
 			if (console || xwindow)
 			    attron(A_ALTCHARSET);
 			if (bold == 2 ||
