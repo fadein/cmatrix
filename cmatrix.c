@@ -380,8 +380,8 @@ void do_opts(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    int i,
-	j = 0,
+    int line,
+	col,
 	count = 0,
 	y,
 	z,
@@ -490,63 +490,60 @@ int main(int argc, char *argv[])
 	    count = 1;  // count stays between [1..3]
 
 	// for every other column...
-	for (j = 0; j < COLS; j += 2) {
+	for (col = 0; col < COLS; col += 2) {
 
 	    // if count is greater than this column's update (or !asynch)
-	    if (count > updates[j] || asynch == 0) {
+	    if (count > updates[col] || asynch == 0) {
 
-		if (matrix[0][j].val == -1 // when would this ever not be true?
-			&& matrix[1][j].val == ' ' // true for every other j
-			&& spaces[j] > 0) {
-		    matrix[0][j].val = -1; // we're only able to do this b/c it's already true
-		    spaces[j]--;
-		}
-		else if (matrix[0][j].val == -1
-			&& matrix[1][j].val == ' ') {
-		    length[j] = (int) rand() % (LINES - 3) + 3;
-		    matrix[0][j].val =
-			(int) rand() % randnum + randmin;
+		if (matrix[0][col].val == -1 && matrix[1][col].val == ' ') {
+		    if (spaces[col] > 0) {
+			spaces[col]--;
+		    }
+		    else {
+			length[col] = (int) rand() % (LINES - 3) + 3;
+			matrix[0][col].val = (int) rand() % randnum + randmin;
 
-		    if ((int) rand() % 2 == 1)
-			matrix[0][j].bold = 2;
+			if ((int) rand() % 2 == 1)
+			    matrix[0][col].bold = 2;
 
-		    spaces[j] = (int) rand() % LINES + 1;
+			spaces[col] = (int) rand() % LINES + 1;
+		    }
 		}
 
-		i = 0;
+		line = 0;
 		y = 0;
 		firstcoldone = 0;
-		while (i <= LINES) {
+		while (line <= LINES) {
 
 		    /* Skip over spaces */
-		    while (i <= LINES && (matrix[i][j].val == ' ' ||
-				matrix[i][j].val == -1))
-			i++;
+		    while (line <= LINES && (matrix[line][col].val == ' ' ||
+				matrix[line][col].val == -1))
+			line++;
 
-		    if (i > LINES)
+		    if (line > LINES)
 			break;
 
 		    /* Go to the head of this collumn */
-		    z = i;
+		    z = line;
 		    y = 0;
-		    while (i <= LINES && (matrix[i][j].val != ' ' &&
-				matrix[i][j].val != -1)) {
-			i++;
+		    while (line <= LINES && (matrix[line][col].val != ' ' &&
+				matrix[line][col].val != -1)) {
+			line++;
 			y++;
 		    }
 
-		    if (i > LINES) {
-			matrix[z][j].val = ' ';
-			matrix[LINES][j].bold = 1;
+		    if (line > LINES) {
+			matrix[z][col].val = ' ';
+			matrix[LINES][col].bold = 1;
 			continue;
 		    }
 
-		    matrix[i][j].val =
+		    matrix[line][col].val =
 			(int) rand() % randnum + randmin;
 
-		    if (matrix[i - 1][j].bold == 2) {
-			matrix[i - 1][j].bold = 1;
-			matrix[i][j].bold = 2;
+		    if (matrix[line - 1][col].bold == 2) {
+			matrix[line - 1][col].bold = 1;
+			matrix[line][col].bold = 2;
 		    }
 
 		    /* If we're at the top of the collumn and it's reached its
@@ -554,33 +551,33 @@ int main(int argc, char *argv[])
 		     * to get it moving.  This is also how we keep segments not
 		     * already growing from growing accidentally =>
 		     */
-		    if (y > length[j] || firstcoldone) {
-			matrix[z][j].val = ' ';
-			matrix[0][j].val = -1;
+		    if (y > length[col] || firstcoldone) {
+			matrix[z][col].val = ' ';
+			matrix[0][col].val = -1;
 		    }
 		    firstcoldone = 1;
-		    i++;
+		    line++;
 		}
-	    } // if (count > updates[j] || asynch == 0)
+	    } // if (count > updates[col] || asynch == 0)
 
 	    y = 1;
 	    z = LINES;
-	    for (i = y; i <= z; i++) {
-		move(i - y, j);
+	    for (line = y; line <= z; line++) {
+		move(line - y, col);
 
-		if (matrix[i][j].val == 0 || matrix[i][j].bold == 2) {
+		if (matrix[line][col].val == 0 || matrix[line][col].bold == 2) {
 		    if (console || xwindow)
 			attron(A_ALTCHARSET);
 		    attron(COLOR_PAIR(COLOR_WHITE));
 		    if (bold)
 			attron(A_BOLD);
-		    if (matrix[i][j].val == 0) {
+		    if (matrix[line][col].val == 0) {
 			if (console || xwindow)
 			    addch(183);
 			else
 			    addch('&');
 		    } else
-			addch(matrix[i][j].val);
+			addch(matrix[line][col].val);
 
 		    attroff(COLOR_PAIR(COLOR_WHITE));
 		    if (bold)
@@ -589,7 +586,7 @@ int main(int argc, char *argv[])
 			attroff(A_ALTCHARSET);
 		} else {
 		    attron(COLOR_PAIR(mcolor));
-		    if (matrix[i][j].val == 1) {
+		    if (matrix[line][col].val == 1) {
 			if (bold)
 			    attron(A_BOLD);
 			addch('|');
@@ -599,14 +596,14 @@ int main(int argc, char *argv[])
 			if (console || xwindow)
 			    attron(A_ALTCHARSET);
 			if (bold == 2 ||
-			    (bold == 1 && matrix[i][j].val % 2 == 0))
+			    (bold == 1 && matrix[line][col].val % 2 == 0))
 			    attron(A_BOLD);
-			if (matrix[i][j].val == -1)
+			if (matrix[line][col].val == -1)
 			    addch(' ');
 			else
-			    addch(matrix[i][j].val);
+			    addch(matrix[line][col].val);
 			if (bold == 2 ||
-			    (bold == 1 && matrix[i][j].val % 2 == 0))
+			    (bold == 1 && matrix[line][col].val % 2 == 0))
 			    attroff(A_BOLD);
 			if (console || xwindow)
 			    attroff(A_ALTCHARSET);
