@@ -194,7 +194,7 @@ RETSIGTYPE var_init(void)
 
     /* Make the matrix */
     for (i = 0; i <= LINES; i++)
-	for (j = 0; j <= COLS - 1; j += 2)
+	for (j = 0; j < COLS; j += 2)
 	    matrix[i][j].val = -1;
 
     for (j = 0; j <= COLS - 1; j += 2) {
@@ -476,22 +476,29 @@ int main(int argc, char *argv[])
     var_init();
 
     while (1) {
-	count++;
-	if (count > 4)
-	    count = 1;
-
 	if ((keypress = wgetch(stdscr)) != ERR) {
 	    if (screensaver == 1)
 		finish(0);
 	    else
 		handle_keypress(keypress);
 	}
-	for (j = 0; j <= COLS - 1; j += 2) {
+
+
+	// increment and clamp count
+	count++;
+	if (count > 4)
+	    count = 1;  // count stays between [1..3]
+
+	// for every other column...
+	for (j = 0; j < COLS; j += 2) {
+
+	    // if count is greater than this column's update (or !asynch)
 	    if (count > updates[j] || asynch == 0) {
 
-		if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
+		if (matrix[0][j].val == -1 // when would this ever not be true?
+			&& matrix[1][j].val == ' ' // true for every other j
 			&& spaces[j] > 0) {
-		    matrix[0][j].val = -1;
+		    matrix[0][j].val = -1; // we're only able to do this b/c it's already true
 		    spaces[j]--;
 		}
 		else if (matrix[0][j].val == -1
@@ -505,6 +512,7 @@ int main(int argc, char *argv[])
 
 		    spaces[j] = (int) rand() % LINES + 1;
 		}
+
 		i = 0;
 		y = 0;
 		firstcoldone = 0;
@@ -553,7 +561,7 @@ int main(int argc, char *argv[])
 		    firstcoldone = 1;
 		    i++;
 		}
-	    }
+	    } // if (count > updates[j] || asynch == 0)
 
 	    y = 1;
 	    z = LINES;
