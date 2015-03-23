@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
 	col,
 	count = 0,
 	y,
-	z,
+	tail,
 	firstcoldone = 0,
 	random = 0,
 	highnum,
@@ -477,6 +477,8 @@ int main(int argc, char *argv[])
     var_init();
 
     while (1) {
+
+	// Handle keypresess
 	if ((keypress = wgetch(stdscr)) != ERR) {
 	    if (screensaver == 1)
 		finish(0);
@@ -490,9 +492,15 @@ int main(int argc, char *argv[])
 	if (count > 4)
 	    count = 1;  // count stays between [1..3]
 
+
 	// for every other column...
 	for (col = 0; col < COLS; col += 2) {
 
+
+
+	    //
+	    // Update the matrix array
+	    //
 	    // if count is greater than this column's update (or !asynch)
 	    if (count > updates[col] || asynch == 0) {
 
@@ -524,8 +532,8 @@ int main(int argc, char *argv[])
 		    if (line > LINES)
 			break;
 
-		    /* Go to the head of this collumn */
-		    z = line;
+		    /* Go to the head of this column */
+		    tail = line;
 		    y = 0;
 		    while (line <= LINES && // while we don't go off the bottom of screen
 			    (matrix[line][col].val != ' ' && // and the current char isn't a
@@ -535,7 +543,7 @@ int main(int argc, char *argv[])
 		    }
 
 		    if (line > LINES) {
-			matrix[z][col].val = ' ';
+			matrix[tail][col].val = ' ';
 			matrix[LINES][col].bold = NORMAL;
 			continue;
 		    }
@@ -551,13 +559,12 @@ int main(int argc, char *argv[])
 			matrix[line][col].bold = BOLD;
 		    }
 
-		    /* If we're at the top of the collumn and it's reached its
-		     * full length (about to start moving down), we do this
-		     * to get it moving.  This is also how we keep segments not
-		     * already growing from growing accidentally =>
-		     */
+		    // If we're at the top of the column and it's reached its
+		    // full length (about to start moving down), we do this
+		    // to get it moving.  This is also how we keep segments not
+		    // already growing from growing accidentally =>
 		    if (y > length[col] || firstcoldone) {
-			matrix[z][col].val = ' ';
+			matrix[tail][col].val = ' ';
 			matrix[0][col].val = -1;
 		    }
 		    firstcoldone = 1;
@@ -565,9 +572,18 @@ int main(int argc, char *argv[])
 		}
 	    } // if (count > updates[col] || asynch == 0)
 
+
+	    //
+	    //
+	    // redraw this column on the screen with curses functions
+	    // (would it perhaps be moar efficient instead of drawing
+	    // each column, to draw each line as a string with addstr()
+	    // and only setting those bold chars as needed with chgat()?)
+	    // well, in some modes, there are an awful lot of bold chars, and not just
+	    // the heads of columns.
 	    y = 1;
-	    z = LINES;
-	    for (line = y; line <= z; line++) {
+	    tail = LINES;
+	    for (line = y; line <= tail; line++) {
 		move(line - y, col);
 
 		if (matrix[line][col].val == 0 || matrix[line][col].bold == BOLD) {
