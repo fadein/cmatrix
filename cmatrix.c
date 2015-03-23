@@ -379,6 +379,12 @@ void do_opts(int argc, char *argv[])
     }
 }
 
+WINDOW *create_newwin(int height, int width, int starty, int startx) {
+    WINDOW *local_win = newwin(height, width, starty, startx);
+
+    return local_win;
+}
+
 int main(int argc, char *argv[])
 {
     int line,
@@ -475,6 +481,8 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     var_init();
+
+    WINDOW *mine = create_newwin(3, 40, LINES / 2, 15);
 
     while (1) {
 
@@ -636,6 +644,11 @@ int main(int argc, char *argv[])
 	    }
 	}
 	refresh();
+
+	box(mine, 0, 0);
+	mvwprintw(mine, 1, 1, "Update speed is %d", update);
+	wrefresh(mine);
+
 	napms(update * 10);
     }
 
