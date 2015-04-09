@@ -482,6 +482,7 @@ int main(int argc, char *argv[])
 
     var_init();
 
+    // TODO - how to peek stdin to see if there is data waiting to be put into the window
     WINDOW *mine = create_newwin(3, 40, LINES / 2, 15);
 
     while (1) {
