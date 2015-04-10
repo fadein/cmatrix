@@ -18,16 +18,19 @@
  *                                                                        *
  **************************************************************************/
 
+#include <ccan/grab_file/grab_file.h>
+#include <ccan/talloc/talloc.h> // For talloc_free()
+#include <err.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/types.h>
 #include <termios.h>
-#include <signal.h>
+#include <time.h>
 
 #include "config.h"
 
@@ -76,7 +79,7 @@ int asynch = 0,
     oldstyle = 0,
     force = 0;
 
-int va_system(char *str, ...)
+int va_system(const char *str, ...)
 {
 
     va_list ap;
@@ -379,10 +382,15 @@ void do_opts(int argc, char *argv[])
     }
 }
 
-WINDOW *create_newwin(int height, int width, int starty, int startx) {
-    WINDOW *local_win = newwin(height, width, starty, startx);
+char* grab_text(char* file, size_t *len) {
+    char* buf;
 
-    return local_win;
+    if (1 == strlen(file) && *file == '-')
+	buf = grab_file(NULL, NULL, len);
+    else
+	buf = grab_file(NULL, file, len);
+
+    return buf;
 }
 
 int main(int argc, char *argv[])
@@ -396,10 +404,11 @@ int main(int argc, char *argv[])
 	random = 0,
 	highnum,
 	randnum,
-	randmin;
+	randmin,
+	keypress;
 
-    char *oldtermname = NULL, *syscmd = NULL;
-    int keypress;
+    char *oldtermname = NULL, *syscmd = NULL, *text = NULL;
+    size_t text_len;
 
     /* Set up values for random number generation */
     if (console || xwindow) {
@@ -481,9 +490,12 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     var_init();
+    //text = grab_text(argv[1] &len, &text_lines);
 
-    // TODO - how to peek stdin to see if there is data waiting to be put into the window
-    WINDOW *mine = create_newwin(3, 40, LINES / 2, 15);
+    //WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
+    WINDOW *mine = newwin(3, 40, LINES / 2, 15);
+    box(mine, 0, 0);
+    mvwprintw(mine, 1, 1, "Update speed is %d", update);
 
     while (1) {
 
@@ -646,8 +658,6 @@ int main(int argc, char *argv[])
 	}
 	refresh();
 
-	box(mine, 0, 0);
-	mvwprintw(mine, 1, 1, "Update speed is %d", update);
 	wrefresh(mine);
 
 	napms(update * 10);

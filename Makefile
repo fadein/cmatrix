@@ -1,11 +1,11 @@
 LDFLAGS = -lncurses -L. -lccan
 CFLAGS  = -I.
 
-grab_file_test: grab_file_test.c libccan.a
-	$(CC) $^ -o $@  $(CFLAGS) $(LDFLAGS)
-
 cmatrix: cmatrix.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
+
+grab_file_test: grab_file_test.c libccan.a
+	$(CC) $^ -o $@  $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -f cmatrix cmatrix.o libccan.a
@@ -18,7 +18,7 @@ clean:
 #	SRCFILES += $(wildcard ccan/*/*.c)
 
 #CCAN_CFLAGS=-g -O3 -Wall -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wwrite-strings -Wundef -DCCAN_STR_DEBUG=1
-CCAN_CFLAGS=-g3 -ggdb -Wall -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wwrite-strings -Wundef -DCCAN_STR_DEBUG=1
+CCAN_CFLAGS=-g3 -ggdb -Wall -DCCAN_STR_DEBUG=1
 CFLAGS = $(CCAN_CFLAGS) -I. $(DEPGEN)
 
 # Modules which are just a header:
