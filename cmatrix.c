@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -414,12 +415,12 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     lines = talloc_array(buf, char*, screenH + 1);
 
     *max_cols = 0;
-    p = strtok(buf, "\n");
+    p = strsep(&buf, "\n");
     while (p != NULL && i < screenH) {
 	lines[i++] = p;
 	if (strlen(p) > *max_cols)
 	    *max_cols = strlen(p) + 1;
-	p = strtok(NULL, "\n");
+	p = strsep(&buf, "\n");
     }
     *num_lines = i + 1;
     return lines;

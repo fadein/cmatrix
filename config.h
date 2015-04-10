@@ -55,6 +55,8 @@
 #define PACKAGE "cmatrix"
 
 /* Version number of package */
-#define VERSION "1.2a"
+#define VERSION "2.0a"
 
-#define _XOPEN_SOURCE 500
+#define _XOPEN_SOURCE 600
+
+#define _BSD_SOURCE 500
