@@ -16,6 +16,7 @@
 
 /* Define this if you have the linux setfont program */
 #define HAVE_SETFONT /usr/bin/setfont
+#undef  HAVE_SETFONT
 
 /* Define this if you have the wresize function in your ncurses-type library */
 #define HAVE_WRESIZE 1
@@ -56,3 +57,4 @@
 /* Version number of package */
 #define VERSION "1.2a"
 
+#define _XOPEN_SOURCE 500

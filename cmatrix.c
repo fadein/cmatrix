@@ -18,6 +18,8 @@
  *                                                                        *
  **************************************************************************/
 
+#include "config.h"
+
 #include <ccan/grab_file/grab_file.h>
 #include <ccan/talloc/talloc.h> // For talloc_free()
 #include <err.h>
@@ -31,8 +33,6 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <time.h>
-
-#include "config.h"
 
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
@@ -78,6 +78,8 @@ int asynch = 0,
     screensaver = 0,
     oldstyle = 0,
     force = 0;
+char *filen = NULL;
+
 
 int va_system(const char *str, ...)
 {
@@ -135,11 +137,12 @@ RETSIGTYPE c_die(char *msg, ...)
 
 void usage(void)
 {
-    printf(" Usage: cmatrix -[abBfhlsVx] [-u delay] [-C color]\n"
+    printf(" Usage: cmatrix -[abBFhlsVx] [-u delay] [-C color]\n"
 	    " -a: Asynchronous scroll\n"
 	    " -b: Bold characters on\n"
 	    " -B: All bold characters (overrides -b)\n"
-	    " -f: Force the linux $TERM type to be on\n"
+	    " -F: Force the linux $TERM type to be on\n"
+	    " -f [file]: write the contents of a file (- for STDIN) on a floating window\n"
 	    " -l: Linux mode (uses matrix console font)\n"
 	    " -o: Use old-style scrolling\n"
 	    " -h: Print usage and exit\n"
@@ -313,7 +316,7 @@ void do_opts(int argc, char *argv[])
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlnosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBf:FhlnosxVu:C:")) != EOF) {
 	switch (optchr) {
 	    case 's':
 		screensaver = 1;
@@ -353,8 +356,11 @@ void do_opts(int argc, char *argv[])
 		    exit(1);
 		}
 		break;
-	    case 'f':
+	    case 'F':
 		force = 1;
+		break;
+	    case 'f':
+		filen = strdup(optarg);
 		break;
 	    case 'l':
 		console = 1;
@@ -382,15 +388,30 @@ void do_opts(int argc, char *argv[])
     }
 }
 
-char* grab_text(char* file, size_t *len) {
-    char* buf;
+char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
+    char *buf, **lines, *p;
+    size_t fsize;
+    int i;
 
     if (1 == strlen(file) && *file == '-')
-	buf = grab_file(NULL, NULL, len);
+	buf = grab_file(NULL, NULL, &fsize);
     else
-	buf = grab_file(NULL, file, len);
+	buf = grab_file(NULL, file, &fsize);
 
-    return buf;
+    // allocate an array of char* that is at least as tall as the screen
+    lines = talloc_array(buf, char*, screenH + 1);
+
+    *max_cols = 0;
+    p = strtok(buf, "\n");
+    while (p != NULL && i < screenH) {
+	    lines[i++] = p;
+	    if (strlen(p) > *max_cols)
+		*max_cols = strlen(p) + 1;
+	    p = strtok(NULL, "\n");
+    }
+    *num_lines = i + 1;
+
+    return lines;
 }
 
 int main(int argc, char *argv[])
@@ -401,24 +422,24 @@ int main(int argc, char *argv[])
 	y,
 	tail,
 	firstcoldone = 0,
-	random = 0,
-	highnum,
 	randnum,
 	randmin,
 	keypress;
 
-    char *oldtermname = NULL, *syscmd = NULL, *text = NULL;
-    size_t text_len;
+    char *oldtermname = NULL, *syscmd = NULL;
+
+    // var for a floating window of text
+    char **text = NULL;
+    int text_lines, text_width;
+    WINDOW *mine = NULL;
 
     /* Set up values for random number generation */
     if (console || xwindow) {
 	randnum = 51;
 	randmin = 166;
-	highnum = 217;
     } else {
 	randnum = 93;
 	randmin = 33;
-	highnum = 123;
     }
 
     do_opts(argc, argv);
@@ -490,12 +511,15 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     var_init();
-    //text = grab_text(argv[1] &len, &text_lines);
 
-    //WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
-    WINDOW *mine = newwin(3, 40, LINES / 2, 15);
-    box(mine, 0, 0);
-    mvwprintw(mine, 1, 1, "Update speed is %d", update);
+    if (filen) {
+	text = grab_text(filen, LINES, &text_lines, &text_width);
+
+	//WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
+	mine = newwin(text_lines + 1, text_width + 1,
+		(LINES / 2) - (text_lines / 2),
+		(COLS  / 2) - (text_width / 2));
+    }
 
     while (1) {
 
@@ -658,7 +682,18 @@ int main(int argc, char *argv[])
 	}
 	refresh();
 
-	wrefresh(mine);
+	if (mine) {
+	    box(mine, 0, 0);
+	    // TODO - for each line of text within
+	    // make sure mvwprintw doesn't return ERR, but rather returns OK
+
+	    // int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...);
+	    for (int i = 0; i < text_lines - 1; ++i) {
+		mvwprintw(mine, i+1, 1, "%s", text[i]);
+	    }
+
+	    wrefresh(mine);
+	}
 
 	napms(update * 10);
     }
