@@ -6,3 +6,4 @@
 
 are all of these calls to rand() efficient?
 	are all of these calls to rand() necessary?
+make my subwindow color-able

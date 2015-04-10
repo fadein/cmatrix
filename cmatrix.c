@@ -391,12 +391,24 @@ void do_opts(int argc, char *argv[])
 char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     char *buf, **lines, *p;
     size_t fsize;
-    int i;
+    int i = 0;
 
-    if (1 == strlen(file) && *file == '-')
+    if (1 == strlen(file) && *file == '-') {
+	// re-open /dev/tty and re-associate it to STDIN
+	int newfd;
+
 	buf = grab_file(NULL, NULL, &fsize);
-    else
+
+	if (-1 == (newfd = open("/dev/tty", O_RDWR))) {
+	    c_die("Couldn't re-open /dev/tty\n");
+	}
+	else {
+	    dup2(newfd, 0);
+	}
+    }
+    else {
 	buf = grab_file(NULL, file, &fsize);
+    }
 
     // allocate an array of char* that is at least as tall as the screen
     lines = talloc_array(buf, char*, screenH + 1);
@@ -404,13 +416,12 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     *max_cols = 0;
     p = strtok(buf, "\n");
     while (p != NULL && i < screenH) {
-	    lines[i++] = p;
-	    if (strlen(p) > *max_cols)
-		*max_cols = strlen(p) + 1;
-	    p = strtok(NULL, "\n");
+	lines[i++] = p;
+	if (strlen(p) > *max_cols)
+	    *max_cols = strlen(p) + 1;
+	p = strtok(NULL, "\n");
     }
     *num_lines = i + 1;
-
     return lines;
 }
 
@@ -455,6 +466,14 @@ int main(int argc, char *argv[])
 	putenv("TERM=linux");
     }
     initscr();
+
+    if (filen) {
+	text = grab_text(filen, LINES, &text_lines, &text_width);
+	mine = newwin(text_lines + 1, text_width + 1,
+		(LINES / 2) - (text_lines / 2),
+		(COLS  / 2) - (text_width / 2));
+    }
+
     savetty();
     nonl();
     cbreak();
@@ -512,14 +531,6 @@ int main(int argc, char *argv[])
 
     var_init();
 
-    if (filen) {
-	text = grab_text(filen, LINES, &text_lines, &text_width);
-
-	//WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
-	mine = newwin(text_lines + 1, text_width + 1,
-		(LINES / 2) - (text_lines / 2),
-		(COLS  / 2) - (text_width / 2));
-    }
 
     while (1) {
 
@@ -684,13 +695,11 @@ int main(int argc, char *argv[])
 
 	if (mine) {
 	    box(mine, 0, 0);
-	    // TODO - for each line of text within
+	    // draw the new text within mine own subwindow,
 	    // make sure mvwprintw doesn't return ERR, but rather returns OK
-
-	    // int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...);
-	    for (int i = 0; i < text_lines - 1; ++i) {
-		mvwprintw(mine, i+1, 1, "%s", text[i]);
-	    }
+	    for (int i = 0; i < text_lines - 1; ++i)
+		if (OK != mvwprintw(mine, i+1, 1, "%s", text[i]))
+		    c_die("mvwprintw() returned an ERR!\n");
 
 	    wrefresh(mine);
 	}
