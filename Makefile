@@ -3,6 +3,7 @@ LDFLAGS = -lncurses -L. -lccan
 #CCAN_CFLAGS=-g -O3 -Wall -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wwrite-strings -Wundef -DCCAN_STR_DEBUG=1
 CCAN_CFLAGS=-g3 -ggdb -Wall -D_DEFAULT_SOURCE=1 -DCCAN_STR_DEBUG=1
 CFLAGS = -std=c99 $(CCAN_CFLAGS) -I. $(DEPGEN)
+PREFIX = /usr/local/bin
 
 # Modules which are just a header:
 MODS_NO_SRC := compiler \
@@ -54,4 +55,7 @@ clean:
 	rm -f cmatrix cmatrix.o libccan.a
 	find . -name *.o | xargs rm -f
 
-.PHONY: clean
+install: cmatrix
+	install -m 755 -o root $^ $(PREFIX)
+
+.PHONY: clean install
