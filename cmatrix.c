@@ -470,7 +470,7 @@ int main(int argc, char *argv[])
 
     if (filen || !isatty(fileno(stdin))) {
 	text = grab_text(filen, LINES, &text_lines, &text_width);
-	mine = newwin(text_lines + 2, text_width + 2,
+	mine = newwin(text_lines + 0, text_width + 2,
 		(LINES / 2) - (text_lines / 2),
 		(COLS  / 2) - (text_width / 2));
 	wattron(mine, A_BOLD|COLOR_PAIR(mcolor));
