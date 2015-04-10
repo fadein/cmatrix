@@ -393,7 +393,7 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     size_t fsize;
     int i = 0;
 
-    if (1 == strlen(file) && *file == '-') {
+    if (file == NULL || (1 == strlen(file) && *file == '-')) {
 	// re-open /dev/tty and re-associate it to STDIN
 	int newfd;
 
@@ -467,7 +467,7 @@ int main(int argc, char *argv[])
     }
     initscr();
 
-    if (filen) {
+    if (filen || !isatty(fileno(stdin))) {
 	text = grab_text(filen, LINES, &text_lines, &text_width);
 	mine = newwin(text_lines + 1, text_width + 1,
 		(LINES / 2) - (text_lines / 2),
