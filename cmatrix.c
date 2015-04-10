@@ -472,6 +472,7 @@ int main(int argc, char *argv[])
 	mine = newwin(text_lines + 1, text_width + 1,
 		(LINES / 2) - (text_lines / 2),
 		(COLS  / 2) - (text_width / 2));
+	wattron(mine, A_BOLD|COLOR_PAIR(mcolor));
     }
 
     savetty();
@@ -694,6 +695,7 @@ int main(int argc, char *argv[])
 	refresh();
 
 	if (mine) {
+	    wattron(mine, A_BOLD|COLOR_PAIR(mcolor));
 	    box(mine, 0, 0);
 	    // draw the new text within mine own subwindow,
 	    // make sure mvwprintw doesn't return ERR, but rather returns OK
