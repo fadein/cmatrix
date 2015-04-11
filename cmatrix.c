@@ -693,17 +693,14 @@ int main(int argc, char *argv[])
 		}
 	    }
 	}
-	refresh();
 
 	if (mine) {
-	    wattron(mine, A_BOLD|COLOR_PAIR(mcolor));
 	    box(mine, 0, 0);
 	    // draw the new text within mine own subwindow,
 	    // make sure mvwprintw doesn't return ERR, but rather returns OK
 	    for (int i = 0; i < text_lines - 1; ++i)
 		if (OK != mvwprintw(mine, i+1, 1, "%s", text[i]))
 		    c_die("mvwprintw() returned an ERR!\n");
-
 	    wrefresh(mine);
 	}
 
