@@ -574,6 +574,7 @@ void draw_matrix() {
 	    }
 	}
     }
+    wnoutrefresh(stdscr);
 }
 
 int main(int argc, char *argv[])
@@ -586,9 +587,9 @@ int main(int argc, char *argv[])
     char *oldtermname = NULL, *syscmd = NULL;
 
     // var for a floating window of text
-    char **text = NULL;
+    char **text_buf = NULL;
     int text_lines, text_width;
-    WINDOW *mine = NULL;
+    WINDOW *text_win = NULL;
 
     /* Set up values for random number generation */
     if (console || xwindow) {
@@ -612,14 +613,6 @@ int main(int argc, char *argv[])
 	putenv("TERM=linux");
     }
     initscr();
-
-    if (filen || !isatty(fileno(stdin))) {
-	text = grab_text(filen, LINES, &text_lines, &text_width);
-	mine = newwin(text_lines + 0, text_width + 2,
-		(LINES / 2) - (text_lines / 2),
-		(COLS  / 2) - (text_width / 2));
-	wattron(mine, A_BOLD|COLOR_PAIR(mcolor));
-    }
 
     savetty();
     nonl();
@@ -678,39 +671,46 @@ int main(int argc, char *argv[])
 
     var_init();
 
+    if (filen || !isatty(fileno(stdin))) {
+	text_buf = grab_text(filen, LINES, &text_lines, &text_width);
+	text_win = newwin(text_lines + 0, text_width + 2,
+		(LINES / 2) - (text_lines / 2) - 1,
+		(COLS  / 2) - (text_width / 2) - 1);
+    }
 
     while (1) {
 
-	// Handle keypresess
-	if ((keypress = wgetch(stdscr)) != ERR) {
+	// Handle keypresess; wgetch() actually forces a screen refresh,
+	// but at this point there shouldn't be anything left to refresh
+	if ((keypress = getch()) != ERR) {
 	    if (screensaver == 1)
 		finish(0);
 	    else
 		handle_keypress(keypress);
 	}
 
-
-	// increment and clamp count
+	// increment and clamp count so that it stays between [1..3]
 	count++;
 	if (count > 4)
-	    count = 1;  // count stays between [1..3]
-
+	    count = 1;
 
 	update_matrix(count, randnum, randmin);
 
+	// draw the matrix to ncurses' internal buffer, but don't push the
+	// changes to the terminal yet
 	draw_matrix();
-	wnoutrefresh(stdscr);
 
-	if (mine) {
-	    box(mine, 0, 0);
-	    // draw the new text within mine own subwindow,
-	    // make sure mvwprintw doesn't return ERR, but rather returns OK
+	// draw the floating text within its own window, but don't force a refresh yet
+	if (text_win) {
+	    wattron(text_win, A_BOLD|COLOR_PAIR(mcolor));
+	    box(text_win, 0, 0);
 	    for (int i = 0; i < text_lines - 1; ++i)
-		if (OK != mvwprintw(mine, i+1, 1, "%s", text[i]))
-		    c_die("mvwprintw() returned an ERR!\n");
-	    wnoutrefresh(mine);
+		if (OK != mvwprintw(text_win, i+1, 1, "%s", text_buf[i]))
+		    c_die("mvwprintw(text_win) returned an ERR!\n");
+	    wnoutrefresh(text_win);
 	}
 
+	// now we may push the completed picture out to the terminal
 	doupdate();
 	napms(update * 10);
     }
