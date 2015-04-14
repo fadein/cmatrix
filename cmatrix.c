@@ -419,14 +419,166 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     return lines;
 }
 
+void update_matrix(int count, int randnum, int randmin) {
+    int line,
+	tail,
+	firstcoldone,
+	y;
+
+    // for every other column...
+    for (int col = 0; col < COLS; col += 2) {
+	//
+	// Update the matrix array
+	//
+	// if count is greater than this column's update
+	if (count > updates[col]) {
+
+	    if (matrix[0][col].val == -1 && matrix[1][col].val == ' ') {
+		if (spaces[col] > 0) {
+		    spaces[col]--;
+		}
+		else {
+		    length[col] = (int) rand() % (LINES - 3) + 3;
+		    matrix[0][col].val = (int) rand() % randnum + randmin;
+
+		    if ((int) rand() % 2 == 1)
+			matrix[0][col].bold = BOLD;
+
+		    spaces[col] = (int) rand() % LINES + 1;
+		}
+	    }
+
+	    line = 0;
+	    y = 0;
+	    firstcoldone = 0;
+	    while (line <= LINES) {
+
+		/* Skip over spaces */
+		while (line <= LINES && (matrix[line][col].val == ' ' ||
+			    matrix[line][col].val == -1))
+		    line++;
+
+		if (line > LINES)
+		    break;
+
+		/* Go to the head of this column */
+		tail = line;
+		y = 0;
+		while (line <= LINES && // while we don't go off the bottom of screen
+			(matrix[line][col].val != ' ' && // and the current char isn't a
+			 matrix[line][col].val != -1)) { // blank or -1
+		    line++;
+		    y++;
+		}
+
+		if (line > LINES) {
+		    matrix[tail][col].val = ' ';
+		    matrix[LINES][col].bold = NORMAL;
+		    continue;
+		}
+
+		// assign a random character to this matrix cell
+		matrix[line][col].val = (int) rand() % randnum + randmin;
+
+		// update this cell's boldness based on the one above it
+		// if the cell above is bold, make it normal
+		// and bold me
+		if (matrix[line - 1][col].bold == BOLD) {
+		    matrix[line - 1][col].bold = NORMAL;
+		    matrix[line][col].bold = BOLD;
+		}
+
+		// If we're at the top of the column and it's reached its
+		// full length (about to start moving down), we do this
+		// to get it moving.  This is also how we keep segments not
+		// already growing from growing accidentally =>
+		if (y > length[col] || firstcoldone) {
+		    matrix[tail][col].val = ' ';
+		    matrix[0][col].val = -1;
+		}
+		firstcoldone = 1;
+		line++;
+	    }
+	} // if (count > updates[col])
+
+    }
+}
+
+void draw_matrix() {
+    int line,
+	tail,
+	y;
+
+    // for every other column...
+    for (int col = 0; col < COLS; col += 2) {
+
+	//
+	//
+	// redraw this column on the screen with curses functions
+	// (would it perhaps be moar efficient instead of drawing
+	// each column, to draw each line as a string with addstr()
+	// and only setting those bold chars as needed with chgat()?)
+	// well, in some modes, there are an awful lot of bold chars, and not just
+	// the heads of columns.
+	y = 1;
+	tail = LINES;
+	for (line = y; line <= tail; line++) {
+	    move(line - y, col);
+
+	    if (matrix[line][col].val == 0 || matrix[line][col].bold == BOLD) {
+		if (console || xwindow)
+		    attron(A_ALTCHARSET);
+		attron(COLOR_PAIR(COLOR_WHITE));
+		if (bold)
+		    attron(A_BOLD);
+		if (matrix[line][col].val == 0) {
+		    if (console || xwindow)
+			addch(183);
+		    else
+			addch('&');
+		} else
+		    addch(matrix[line][col].val);
+
+		attroff(COLOR_PAIR(COLOR_WHITE));
+		if (bold)
+		    attroff(A_BOLD);
+		if (console || xwindow)
+		    attroff(A_ALTCHARSET);
+	    }
+	    else {
+		attron(COLOR_PAIR(mcolor));
+		if (matrix[line][col].val == 1) {
+		    if (bold)
+			attron(A_BOLD);
+		    addch('|');
+		    if (bold)
+			attroff(A_BOLD);
+		}
+		else {
+		    if (console || xwindow)
+			attron(A_ALTCHARSET);
+		    if (bold == 2 ||
+			    (bold == 1 && matrix[line][col].val % 2 == 0))
+			attron(A_BOLD);
+		    if (matrix[line][col].val == -1)
+			addch(' ');
+		    else
+			addch(matrix[line][col].val);
+		    if (bold == 2 ||
+			    (bold == 1 && matrix[line][col].val % 2 == 0))
+			attroff(A_BOLD);
+		    if (console || xwindow)
+			attroff(A_ALTCHARSET);
+		}
+		attroff(COLOR_PAIR(mcolor));
+	    }
+	}
+    }
+}
+
 int main(int argc, char *argv[])
 {
-    int line,
-	col,
-	count = 0,
-	y,
-	tail,
-	firstcoldone = 0,
+    int count = 0,
 	randnum,
 	randmin,
 	keypress;
@@ -544,148 +696,9 @@ int main(int argc, char *argv[])
 	    count = 1;  // count stays between [1..3]
 
 
-	// for every other column...
-	for (col = 0; col < COLS; col += 2) {
+	update_matrix(count, randnum, randmin);
 
-
-
-	    //
-	    // Update the matrix array
-	    //
-	    // if count is greater than this column's update
-	    if (count > updates[col]) {
-
-		if (matrix[0][col].val == -1 && matrix[1][col].val == ' ') {
-		    if (spaces[col] > 0) {
-			spaces[col]--;
-		    }
-		    else {
-			length[col] = (int) rand() % (LINES - 3) + 3;
-			matrix[0][col].val = (int) rand() % randnum + randmin;
-
-			if ((int) rand() % 2 == 1)
-			    matrix[0][col].bold = BOLD;
-
-			spaces[col] = (int) rand() % LINES + 1;
-		    }
-		}
-
-		line = 0;
-		y = 0;
-		firstcoldone = 0;
-		while (line <= LINES) {
-
-		    /* Skip over spaces */
-		    while (line <= LINES && (matrix[line][col].val == ' ' ||
-				matrix[line][col].val == -1))
-			line++;
-
-		    if (line > LINES)
-			break;
-
-		    /* Go to the head of this column */
-		    tail = line;
-		    y = 0;
-		    while (line <= LINES && // while we don't go off the bottom of screen
-			    (matrix[line][col].val != ' ' && // and the current char isn't a
-			     matrix[line][col].val != -1)) { // blank or -1
-			line++;
-			y++;
-		    }
-
-		    if (line > LINES) {
-			matrix[tail][col].val = ' ';
-			matrix[LINES][col].bold = NORMAL;
-			continue;
-		    }
-
-		    // assign a random character to this matrix cell
-		    matrix[line][col].val = (int) rand() % randnum + randmin;
-
-		    // update this cell's boldness based on the one above it
-		    // if the cell above is bold, make it normal
-		    // and bold me
-		    if (matrix[line - 1][col].bold == BOLD) {
-			matrix[line - 1][col].bold = NORMAL;
-			matrix[line][col].bold = BOLD;
-		    }
-
-		    // If we're at the top of the column and it's reached its
-		    // full length (about to start moving down), we do this
-		    // to get it moving.  This is also how we keep segments not
-		    // already growing from growing accidentally =>
-		    if (y > length[col] || firstcoldone) {
-			matrix[tail][col].val = ' ';
-			matrix[0][col].val = -1;
-		    }
-		    firstcoldone = 1;
-		    line++;
-		}
-	    } // if (count > updates[col])
-
-
-	    //
-	    //
-	    // redraw this column on the screen with curses functions
-	    // (would it perhaps be moar efficient instead of drawing
-	    // each column, to draw each line as a string with addstr()
-	    // and only setting those bold chars as needed with chgat()?)
-	    // well, in some modes, there are an awful lot of bold chars, and not just
-	    // the heads of columns.
-	    y = 1;
-	    tail = LINES;
-	    for (line = y; line <= tail; line++) {
-		move(line - y, col);
-
-		if (matrix[line][col].val == 0 || matrix[line][col].bold == BOLD) {
-		    if (console || xwindow)
-			attron(A_ALTCHARSET);
-		    attron(COLOR_PAIR(COLOR_WHITE));
-		    if (bold)
-			attron(A_BOLD);
-		    if (matrix[line][col].val == 0) {
-			if (console || xwindow)
-			    addch(183);
-			else
-			    addch('&');
-		    } else
-			addch(matrix[line][col].val);
-
-		    attroff(COLOR_PAIR(COLOR_WHITE));
-		    if (bold)
-			attroff(A_BOLD);
-		    if (console || xwindow)
-			attroff(A_ALTCHARSET);
-		}
-		else {
-		    attron(COLOR_PAIR(mcolor));
-		    if (matrix[line][col].val == 1) {
-			if (bold)
-			    attron(A_BOLD);
-			addch('|');
-			if (bold)
-			    attroff(A_BOLD);
-		    }
-		    else {
-			if (console || xwindow)
-			    attron(A_ALTCHARSET);
-			if (bold == 2 ||
-			    (bold == 1 && matrix[line][col].val % 2 == 0))
-			    attron(A_BOLD);
-			if (matrix[line][col].val == -1)
-			    addch(' ');
-			else
-			    addch(matrix[line][col].val);
-			if (bold == 2 ||
-			    (bold == 1 && matrix[line][col].val % 2 == 0))
-			    attroff(A_BOLD);
-			if (console || xwindow)
-			    attroff(A_ALTCHARSET);
-		    }
-		    attroff(COLOR_PAIR(mcolor));
-		}
-	    }
-	}
+	draw_matrix();
 
 	if (mine) {
 	    box(mine, 0, 0);
