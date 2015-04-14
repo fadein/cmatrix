@@ -699,6 +699,7 @@ int main(int argc, char *argv[])
 	update_matrix(count, randnum, randmin);
 
 	draw_matrix();
+	wnoutrefresh(stdscr);
 
 	if (mine) {
 	    box(mine, 0, 0);
@@ -707,9 +708,10 @@ int main(int argc, char *argv[])
 	    for (int i = 0; i < text_lines - 1; ++i)
 		if (OK != mvwprintw(mine, i+1, 1, "%s", text[i]))
 		    c_die("mvwprintw() returned an ERR!\n");
-	    wrefresh(mine);
+	    wnoutrefresh(mine);
 	}
 
+	doupdate();
 	napms(update * 10);
     }
 
