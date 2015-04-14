@@ -2,7 +2,8 @@ CC = gcc
 LDFLAGS = -lncurses -L. -lccan
 #CCAN_CFLAGS=-g -O3 -Wall -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wwrite-strings -Wundef -DCCAN_STR_DEBUG=1
 CCAN_CFLAGS=-g3 -ggdb -Wall -D_DEFAULT_SOURCE=1 -DCCAN_STR_DEBUG=1
-CFLAGS = -std=c99 $(CCAN_CFLAGS) -I. $(DEPGEN)
+PROFILING = # -pg
+CFLAGS = $(PROFILING) -std=c99 $(CCAN_CFLAGS) -I. $(DEPGEN)
 PREFIX = /usr/local/bin
 
 # Modules which are just a header:
@@ -52,7 +53,7 @@ grab_file_test: grab_file_test.c libccan.a
 	$(CC) $^ -o $@  $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm -f cmatrix cmatrix.o libccan.a
+	rm -f cmatrix cmatrix.o libccan.a gmon.out
 	find . -name *.o | xargs rm -f
 
 install: cmatrix
