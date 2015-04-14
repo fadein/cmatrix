@@ -72,8 +72,7 @@ cmatrix **matrix = (cmatrix **) NULL;   /* The matrix has you */
 int *length = NULL;			/* Length of cols in each line */
 int *spaces = NULL;			/* spaces left to fill */
 int *updates = NULL;			/* What does this do again? :) */
-int asynch = 0,
-    bold   = -1,
+int bold   = -1,
     update = 4,
     mcolor = COLOR_GREEN,
     screensaver = 0,
@@ -263,9 +262,6 @@ void handle_keypress(int keypress)
 	case 'q':
 	    finish(0);
 	    break;
-	case 'a':
-	    asynch = 1 - asynch;
-	    break;
 	case 'b':
 	    bold = 1;
 	    break;
@@ -317,13 +313,10 @@ void do_opts(int argc, char *argv[])
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBf:FhlnosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "bBf:FhlnosxVu:C:")) != EOF) {
 	switch (optchr) {
 	    case 's':
 		screensaver = 1;
-		break;
-	    case 'a':
-		asynch = 1;
 		break;
 	    case 'b':
 		if (bold != 2 && bold != 0)
@@ -559,8 +552,8 @@ int main(int argc, char *argv[])
 	    //
 	    // Update the matrix array
 	    //
-	    // if count is greater than this column's update (or !asynch)
-	    if (count > updates[col] || asynch == 0) {
+	    // if count is greater than this column's update
+	    if (count > updates[col]) {
 
 		if (matrix[0][col].val == -1 && matrix[1][col].val == ' ') {
 		    if (spaces[col] > 0) {
@@ -628,7 +621,7 @@ int main(int argc, char *argv[])
 		    firstcoldone = 1;
 		    line++;
 		}
-	    } // if (count > updates[col] || asynch == 0)
+	    } // if (count > updates[col])
 
 
 	    //
