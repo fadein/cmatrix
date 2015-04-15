@@ -78,8 +78,12 @@ int bold   = -1,
     screensaver = 0,
     oldstyle = 0,
     force = 0;
-char *filen = NULL;
 
+/* floating window of text */
+char *filen = NULL;
+char **text_buf = NULL;
+int text_lines = 0, text_width = 0;
+WINDOW *text_win = NULL;
 
 int va_system(const char *str, ...)
 {
@@ -216,6 +220,15 @@ RETSIGTYPE var_init(void)
 	updates[j] = (int) rand() % 3 + 1;
     }
 
+    /* make the floating window of text atop the matrix, if we have any text */
+    if (text_lines > 0) {
+	if (text_win)
+	    delwin(text_win);
+
+	text_win = newwin(text_lines + 0, text_width + 2,
+		(LINES / 2) - (text_lines / 2),
+		(COLS  / 2) - (text_width / 2));
+    }
 }
 
 void handle_sigwinch(int s)
@@ -586,11 +599,6 @@ int main(int argc, char *argv[])
 
     char *oldtermname = NULL, *syscmd = NULL;
 
-    // var for a floating window of text
-    char **text_buf = NULL;
-    int text_lines, text_width;
-    WINDOW *text_win = NULL;
-
     /* Set up values for random number generation */
     if (console || xwindow) {
 	randnum = 51;
@@ -668,16 +676,15 @@ int main(int argc, char *argv[])
 	}
     }
 
+    // draw text from STDIN or the filename given with the -f flag in
+    // its own floating window
+    if (filen || !isatty(fileno(stdin))) {
+	text_buf = grab_text(filen, LINES, &text_lines, &text_width);
+    }
+
     srand(time(NULL));
 
     var_init();
-
-    if (filen || !isatty(fileno(stdin))) {
-	text_buf = grab_text(filen, LINES, &text_lines, &text_width);
-	text_win = newwin(text_lines + 0, text_width + 2,
-		(LINES / 2) - (text_lines / 2) - 1,
-		(COLS  / 2) - (text_width / 2) - 1);
-    }
 
     while (1) {
 
