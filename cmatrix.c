@@ -83,7 +83,6 @@ char *filen = NULL;
 
 int va_system(const char *str, ...)
 {
-
     va_list ap;
     char foo[133];
 
@@ -160,7 +159,6 @@ void version(void)
 	   VERSION, __TIME__, __DATE__);
     printf(" Email: cmatrix@asty.org  Web: http://www.asty.org/cmatrix\n");
 }
-
 
 /* nmalloc from nano by Big Gaute */
 void *nmalloc(size_t howmany, size_t howbig)
@@ -249,12 +247,11 @@ void handle_sigwinch(int s)
 #endif				/* HAVE_RESIZETERM */
 
     var_init();
+
     /* Do these b/c width may have changed... */
     clear();
     refresh();
-
 }
-
 
 void handle_keypress(int keypress)
 {
@@ -382,7 +379,8 @@ void do_opts(int argc, char *argv[])
     }
 }
 
-char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
+char** grab_text(char* file, int screenH, int *num_lines, int *max_cols)
+{
     char *buf, **lines, *p;
     size_t fsize;
     int i = 0;
@@ -419,7 +417,8 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols) {
     return lines;
 }
 
-void update_matrix(int count, int randnum, int randmin) {
+void update_matrix(int count, int randnum, int randmin)
+{
     int line,
 	tail,
 	firstcoldone,
@@ -504,7 +503,8 @@ void update_matrix(int count, int randnum, int randmin) {
     }
 }
 
-void draw_matrix() {
+void draw_matrix()
+{
     int line,
 	tail,
 	y;
@@ -612,8 +612,8 @@ int main(int argc, char *argv[])
 	oldtermname = getenv("TERM");
 	putenv("TERM=linux");
     }
-    initscr();
 
+    initscr();
     savetty();
     nonl();
     cbreak();
@@ -639,6 +639,7 @@ int main(int argc, char *argv[])
 		 " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
 	}
 #endif
+
     if (has_colors()) {
 	start_color();
 	/* Add in colors, if available */
