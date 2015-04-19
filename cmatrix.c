@@ -84,6 +84,7 @@ char *filen = NULL;
 char **text_buf = NULL;
 int text_lines = 0, text_width = 0;
 WINDOW *text_win = NULL;
+char windowBorder = 0;
 
 int va_system(const char *str, ...)
 {
@@ -281,6 +282,9 @@ void handle_keypress(int keypress)
 	case 'n':
 	    bold = 0;
 	    break;
+	case 'w':
+	    windowBorder = windowBorder ? 0 : ' ';
+	    break;
 	case '0':
 	case '1':
 	case '2':
@@ -323,7 +327,7 @@ void do_opts(int argc, char *argv[])
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "bBf:FhlnosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "bBf:FhlnoswxVu:C:")) != EOF) {
 	switch (optchr) {
 	    case 's':
 		screensaver = 1;
@@ -365,6 +369,9 @@ void do_opts(int argc, char *argv[])
 		break;
 	    case 'f':
 		filen = strdup(optarg);
+		break;
+	    case 'w':
+		windowBorder = ' ';
 		break;
 	    case 'l':
 		console = 1;
@@ -711,7 +718,9 @@ int main(int argc, char *argv[])
 	// draw the floating text within its own window, but don't force a refresh yet
 	if (text_win) {
 	    wattron(text_win, A_BOLD|COLOR_PAIR(mcolor));
-	    box(text_win, 0, 0);
+	    wborder(text_win, windowBorder, windowBorder,
+		    windowBorder, windowBorder, windowBorder, windowBorder,
+		    windowBorder, windowBorder);
 	    for (int i = 0; i < text_lines - 1; ++i)
 		if (OK != mvwprintw(text_win, i+1, 1, "%s", text_buf[i]))
 		    c_die("mvwprintw(text_win) returned an ERR!\n");
