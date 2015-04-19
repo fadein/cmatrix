@@ -7,3 +7,6 @@
 
 are all of these calls to rand() efficient?
 	are all of these calls to rand() necessary?
+
+Try this:
+	figlet -f doh hi | sed -e '/^\s*$/d' | ./cmatrix -b -C blue
