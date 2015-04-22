@@ -83,7 +83,7 @@ char *filen = NULL;
 char **text_buf = NULL;
 int text_lines = 0, text_width = 0;
 WINDOW *text_win = NULL;
-char windowBorder = 0;
+char windowBorder = ' ';
 
 int va_system(const char *str, ...)
 {
@@ -145,7 +145,7 @@ void usage(void)
 	    " -B: All bold characters (overrides -b)\n"
 	    " -F: Force the linux $TERM type to be on\n"
 	    " -f [file]: write the contents of a file (- for STDIN) on a floating window\n"
-	    " -w: Disable border around floating text window\n"
+	    " -w: Draw border around floating text window\n"
 	    " -l: Linux mode (uses matrix console font)\n"
 	    " -h: Print usage and exit\n"
 	    " -n: No bold characters (overrides -b and -B, default)\n"
@@ -370,7 +370,7 @@ void do_opts(int argc, char *argv[])
 		filen = strdup(optarg);
 		break;
 	    case 'w':
-		windowBorder = ' ';
+		windowBorder = 0;
 		break;
 	    case 'l':
 		console = 1;
