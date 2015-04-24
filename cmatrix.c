@@ -411,7 +411,7 @@ char** grab_text(char* file, int screenH, int *num_lines, int *max_cols)
 	    c_die("Couldn't re-open /dev/tty\n");
 	}
 	else {
-	    dup2(newfd, 0);
+	    dup2(newfd, fileno(stdin));
 	}
     }
     else {
@@ -681,7 +681,7 @@ int main(int argc, char *argv[])
 
     // draw text from STDIN or the filename given with the -f flag in
     // its own floating window
-    if (filen || !isatty(fileno(stdin))) {
+    if (filen || ! isatty(fileno(stdin))) {
 	text_buf = grab_text(filen, LINES, &text_lines, &text_width);
     }
 
