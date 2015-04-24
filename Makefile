@@ -57,6 +57,6 @@ clean:
 	find . -name *.o | xargs rm -f
 
 install: cmatrix
-	install -m 755 -o root $^ $(PREFIX)
+	install -s -m 755 -o root $^ $(PREFIX)
 
 .PHONY: clean install
