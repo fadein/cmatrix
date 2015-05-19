@@ -1,3 +1,18 @@
+cmatrix 2.0 - 05/18/2015
+- Updated autoconf/automake support
+- Remove -o old-style scrolling mode
+- New command-line argument: -f [filename]
+  Display text contained within filename in a floating window
+  above the matrix background. But wait, there's more!
+  You may also pipe command output into cmatrix or use your
+  shell's redirection operators to pipe a file's contents into 
+  the floating window. For example:
+
+    $ cowsay Wake up, Neo | cmatrix
+
+- Add -w argument which draws a border around the floating text
+  window.
+
 cmatrix 1.2a - 03/31/2002
 - Eliminated MAXLINES and MAXCOLS variables, now uses malloc()
   to allocate the necessary memory for the lines and cols.  Vars 
