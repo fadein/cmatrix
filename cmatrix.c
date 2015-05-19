@@ -22,7 +22,6 @@
 
 #include <ccan/grab_file/grab_file.h>
 #include <ccan/talloc/talloc.h> // For talloc_free()
-#include <err.h>
 #include <fcntl.h>
 #include <ncurses.h>
 #include <signal.h>
