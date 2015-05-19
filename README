@@ -1,18 +1,20 @@
-CMatrix - show a scrolling 'Matrix' like screen in Linux (curses based)
+CMatrix - show a scrolling 'Matrix' like screen in Linux (ncurses based)
 ------------------------------------------------------------------------------
 
 CMatrix Homepage - be sure to check out the latest version =-)
-http://www.asty.org/cmatrix
+http://github.com/fadein/cmatrix
 
-To compile the program, type 'make'.
+To compile the program, run './configure; make'.
 
 CMatrix by default operates in 'eye candy' mode.  It must be aborted with
 control-c or 'q'.  If you wish for more of a 'screen saver' effect, you
 must specify -s on the command line.  For usage, use cmatrix -h.
 
-  To get the program to look most like the movie, use cmatrix -lba
-  To get the program to look most like the Win/Mac screensaver, use
-  cmatrix -ol
+  To get the program to look most like the movie, use cmatrix -lb
+
+
+------------------------------------------------------------------------------
+Original README text from the original author:
 
    You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.

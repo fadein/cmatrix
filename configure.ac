@@ -12,11 +12,10 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_PROG_CC_C99
 
 # Checks for libraries.
+AC_CHECK_LIB([ncurses], [initscr])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h termio.h termios.h unistd.h])
-
-AC_CHECK_LIB([ncurses], [initscr])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
