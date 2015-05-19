@@ -141,9 +141,9 @@ void usage(void)
 
 void version(void)
 {
-    printf(" CMatrix version %s by Chris Allegretta (compiled %s, %s)\n",
+    printf(" CMatrix version %s by Chris Allegretta and Erik Falor (compiled %s, %s)\n",
 	   VERSION, __TIME__, __DATE__);
-    printf(" Email: cmatrix@asty.org  Web: http://www.asty.org/cmatrix\n");
+    printf(" Email: ewfalor@gmail.com  Web: http://github.com/fadein/cmatrix\n");
 }
 
 /* nmalloc from nano by Big Gaute */
