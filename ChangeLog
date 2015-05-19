@@ -1,7 +1,7 @@
 cmatrix 2.0 - 05/18/2015
 - Updated autoconf/automake support
 - Remove -o old-style scrolling mode
-- New command-line argument: -f [filename]
+- New command-line argument: -f FILENAME
   Display text contained within filename in a floating window
   above the matrix background. But wait, there's more!
   You may also pipe command output into cmatrix or use your
@@ -12,6 +12,7 @@ cmatrix 2.0 - 05/18/2015
 
 - Add -w argument which draws a border around the floating text
   window.
+- Add -t TIMEOUT argument which causes cmatrix to exit after TIMEOUT seconds
 
 cmatrix 1.2a - 03/31/2002
 - Eliminated MAXLINES and MAXCOLS variables, now uses malloc()
