@@ -58,7 +58,8 @@ int bold   = -1,
     update = 4,
     mcolor = COLOR_GREEN,
     screensaver = 0,
-    force = 0;
+    force = 0,
+    cm_timeout = 0;
 
 /* floating window of text */
 char *filen = NULL;
@@ -122,20 +123,21 @@ void c_die(char *msg, ...)
 
 void usage(void)
 {
-    printf(" Usage: cmatrix -[bBFwhlsVx] [-u delay] [-C color] [-f file]\n"
-	    " -b: Bold characters on\n"
+    printf(" Usage: cmatrix -[BFVbhlnswx] [-C color] [-f file] [-t timeout] [-u delay]\n"
 	    " -B: All bold characters (overrides -b)\n"
 	    " -F: Force the linux $TERM type to be on\n"
-	    " -f [file]: write the contents of a file (- for STDIN) on a floating window\n"
-	    " -w: Draw border around floating text window\n"
-	    " -l: Linux mode (uses matrix console font)\n"
+	    " -V: Print version information and exit\n"
+	    " -b: Bold characters on\n"
 	    " -h: Print usage and exit\n"
+	    " -l: Linux mode (uses matrix console font)\n"
 	    " -n: No bold characters (overrides -b and -B, default)\n"
 	    " -s: \"Screensaver\" mode, exits on first keystroke\n"
+	    " -w: Draw border around floating text window\n"
 	    " -x: X window mode, use if your xterm is using mtx.pcf\n"
-	    " -V: Print version information and exit\n"
-	    " -u delay (0 - 10, default 4): Screen update delay\n"
 	    " -C [color]: Use this color for matrix (default green)\n"
+	    " -f [file]: write the contents of a file (- for STDIN) on a floating window\n"
+	    " -t timeout: Exit cmatrix after so many seconds\n"
+	    " -u delay (0 - 10, default 4): Screen update delay\n"
 	    "\nText may be redirected to this process in lieu of specifying a filename with -f\n");
 }
 
@@ -308,7 +310,7 @@ void do_opts(int argc, char *argv[])
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "bBf:FhlnswxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "BFVbhlnswxC:f:t:u:")) != EOF) {
 	switch (optchr) {
 	    case 's':
 		screensaver = 1;
@@ -356,6 +358,11 @@ void do_opts(int argc, char *argv[])
 		break;
 	    case 'l':
 		console = 1;
+		break;
+	    case 't':
+		cm_timeout = atoi(optarg);
+		if (cm_timeout < 0)
+		    cm_timeout = 0;
 		break;
 	    case 'n':
 		bold = 0;
@@ -667,7 +674,12 @@ int main(int argc, char *argv[])
 	text_buf = grab_text(filen, LINES, &text_lines, &text_width);
     }
 
-    srand(time(NULL));
+    int now = time(NULL);
+    srand(now);
+
+    // if the user specified a timeout, schedule the end
+    if (cm_timeout > 0)
+	cm_timeout += now;
 
     var_init();
 
@@ -708,6 +720,9 @@ int main(int argc, char *argv[])
 	// now we may push the completed picture out to the terminal
 	doupdate();
 	napms(update * 10);
+
+	if (cm_timeout && time(NULL) > cm_timeout)
+	    break;
     }
 
     if (oldtermname) {
