@@ -18,44 +18,26 @@
  *                                                                        *
  **************************************************************************/
 
-#include "config.h"
+#include <config.h>
 
 #include <ccan/grab_file/grab_file.h>
 #include <ccan/talloc/talloc.h> // For talloc_free()
 #include <err.h>
 #include <fcntl.h>
+#include <ncurses.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <termio.h>
 #include <termios.h>
 #include <time.h>
-
-#ifdef HAVE_NCURSES_H
-#include <ncurses.h>
-#else				/* Uh oh */
-#include <curses.h>
-#endif				/* CURSES_H */
-
-#ifdef HAVE_SYS_IOCTL_H
-#include <sys/ioctl.h>
-#endif				/* HAVE_SYS_IOCTL_H */
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif				/* HAVE_UNISTD_H */
-
-#ifdef HAVE_TERMIOS_H
-#include <termios.h>
-#endif				/* HAVE_TERMIOS_H */
-
-#ifdef HAVE_TERMIO_H
-#include <termio.h>
-#endif				/* HAVE_TERMIO_H */
 
 
 typedef enum { NORMAL = 1, BOLD = 2 } boldness;
@@ -97,7 +79,7 @@ int va_system(const char *str, ...)
 }
 
 /* What we do when we're all set to exit */
-RETSIGTYPE finish(int sigage)
+void finish(int sigage)
 {
     curs_set(1);
     clear();
@@ -115,7 +97,7 @@ RETSIGTYPE finish(int sigage)
 }
 
 /* What we do when we're all set to exit */
-RETSIGTYPE c_die(char *msg, ...)
+void c_die(char *msg, ...)
 {
     va_list ap;
 
@@ -178,7 +160,7 @@ void *nmalloc(size_t howmany, size_t howbig)
 }
 
 /* Initialize the global variables */
-RETSIGTYPE var_init(void)
+void var_init(void)
 {
     int i, j;
 
