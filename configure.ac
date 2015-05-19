@@ -6,7 +6,7 @@ AC_INIT([cmatrix], [2.0], [ewfalor@gmail.com])
 AC_CONFIG_SRCDIR([cmatrix.c])
 AC_CONFIG_HEADERS([config.h])
 
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 
 # Checks for programs.
 AC_PROG_CC_C99
