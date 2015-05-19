@@ -1,7 +1,7 @@
 CMatrix - show a scrolling 'Matrix' like screen in Linux (ncurses based)
 ------------------------------------------------------------------------------
 
-CMatrix Homepage - be sure to check out the latest version =-)
+Up-to-the-minute updates can be found on GitHub
 http://github.com/fadein/cmatrix
 
 To compile the program, run './configure; make'.
@@ -14,6 +14,9 @@ must specify -s on the command line.  For usage, use cmatrix -h.
 
 ------------------------------------------------------------------------------
 Original README text from the original author:
+
+CMatrix Homepage - be sure to check out the latest version =-)
+http://www.asty.org/cmatrix
 
    You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.
