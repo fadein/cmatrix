@@ -72,7 +72,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* To use default colors, or not */
+/* Whether this curses library allows the "default" color, for transparency */
 #undef HAVE_USE_DEFAULT_COLORS
 
 /* Can we resize the term with wresize() */

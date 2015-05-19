@@ -22,8 +22,8 @@
 
 #include <ccan/grab_file/grab_file.h>
 #include <ccan/talloc/talloc.h> // For talloc_free()
+
 #include <fcntl.h>
-#include <ncurses.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -38,6 +38,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(HAVE_NCURSES_H)
+#  include <ncurses.h>
+#elif defined(HAVE_CURSES_H)
+#  include <curses.h>
+#endif
 
 typedef enum { NORMAL = 1, BOLD = 2 } boldness;
 
