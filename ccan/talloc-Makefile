@@ -1,2 +1,0 @@
-ccan/talloc-Makefile: ccan/talloc/talloc.h ccan/talloc/talloc.c ccan/talloc/_info
-ccan/talloc.o: ccan/talloc/talloc.o

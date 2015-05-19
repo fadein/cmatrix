@@ -1,5 +1,7 @@
 bin_PROGRAMS = cmatrix
-cmatrix_SOURCES = cmatrix.c
+cmatrix_SOURCES = cmatrix.c ccan/compiler/compiler.h ccan/grab_file/grab_file.c ccan/grab_file/grab_file.h \
+				  ccan/noerr/noerr.c ccan/noerr/noerr.h ccan/talloc/talloc.c ccan/talloc/talloc.h \
+				  ccan/typesafe_cb/typesafe_cb.h
 
 man_MANS = cmatrix.1
 
