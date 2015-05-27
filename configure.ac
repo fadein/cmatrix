@@ -12,6 +12,10 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AC_PROG_CC_C99
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AM_PROG_CC_C_O
+
+# Checks for libraries.
+AC_CHECK_LIB([ncurses], [initscr])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h termio.h termios.h unistd.h])
